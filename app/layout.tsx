@@ -20,22 +20,22 @@ const plexMono = IBM_Plex_Mono({
 });
 
 const description =
-  "One team for web development, custom software, design, SEO and market intelligence — for Indian businesses that need customers, not just a website. Get a costed range in minutes.";
+  "One team for web development, custom software, design, SEO and market intelligence — for businesses that need customers, not just a website.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Chimpanion — Web development, software and growth for Indian businesses",
+    default: "Web development, custom software & growth — Chimpanion",
     template: "%s | Chimpanion",
   },
   description,
   keywords: [
-    "web development India",
+    "web development",
     "website design for small business",
     "custom software development",
     "e-commerce development",
     "CRM and admin panel development",
-    "SEO services India",
+    "SEO services",
     "lead generation",
     "competitor price monitoring",
     "digital product studio",
@@ -43,13 +43,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    locale: "en_IN",
+    // One English page serving four markets.
+    locale: "en_US",
+    alternateLocale: ["en_IN", "en_GB", "en_AE"],
     url: site.url,
     siteName: site.name,
     title: "Chimpanion — Build. Launch. Grow.",
     description,
   },
   twitter: { card: "summary_large_image", title: "Chimpanion — Build. Launch. Grow.", description },
+  // Social cards and icons come from app/opengraph-image.tsx, twitter-image.tsx and icon.tsx.
   robots: {
     index: true,
     follow: true,
@@ -66,7 +69,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${archivo.variable} ${inter.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${inter.variable} ${plexMono.variable}`}>
       <body>
         <a className="skiplink" href="#main">
           Skip to content

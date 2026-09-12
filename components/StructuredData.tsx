@@ -19,10 +19,10 @@ export default function StructuredData() {
       url: site.url,
       slogan: site.tagline,
       description:
-        "Chimpanion is a business-building studio in India. One team for product discovery, design, web and software development, launch, growth marketing and market intelligence for small and mid-sized businesses.",
+        "Chimpanion is a business-building studio. One team for product discovery, design, web and software development, launch, growth marketing and market intelligence — for small and mid-sized businesses in India, the United States, the United Kingdom and the UAE.",
       email: site.email,
       telephone: `+${site.whatsapp}`,
-      areaServed: { "@type": "Country", name: site.areaServed },
+      areaServed: ["India", "United States", "United Kingdom", "United Arab Emirates"].map((name) => ({ "@type": "Country", name })),
       address: { "@type": "PostalAddress", addressLocality: site.city, addressCountry: site.country },
       sameAs: [site.linkedin],
       hasOfferCatalog: {

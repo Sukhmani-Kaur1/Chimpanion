@@ -1,14 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Playfair_Display, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { EstimatorProvider } from "@/components/EstimatorProvider";
 import StructuredData from "@/components/StructuredData";
 import { site } from "@/lib/site";
 
-const archivo = Archivo({
+/**
+ * The display face: a high-contrast editorial serif against Inter's plain running copy. Variable
+ * on weight, so one file covers the 96px hero and a 16px card title.
+ */
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["700", "800", "900"],
-  variable: "--font-archivo",
+  // The italic is loaded for one job: the accented word in the hero headline.
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
   display: "swap",
 });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -69,9 +74,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${inter.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${inter.variable} ${plexMono.variable}`}>
       <body>
-        <a className="skiplink" href="#main">
+        <a
+          className="absolute top-0 -left-[9999px] z-100 rounded-br-lg bg-ink px-4 py-3 text-white focus:left-0 print:hidden"
+          href="#main"
+        >
           Skip to content
         </a>
         <EstimatorProvider>{children}</EstimatorProvider>

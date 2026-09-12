@@ -25,9 +25,13 @@ import type {
   StoreApproach,
   Timeline,
 } from "@/lib/pricing/types";
-import { Chips, Choice, Stepper, Toggle } from "./controls";
+import { Chips, Choice, Stepper, Toggle, chipClass } from "./controls";
 import EstimateDetail from "./EstimateDetail";
 import { Checks, Headline } from "./Summary";
+import Button from "../ui/Button";
+import { Container, fieldClass } from "../ui/Layout";
+import Typography from "../ui/Typography";
+import { cn } from "@/lib/cn";
 
 const PRESETS: [BenchmarkId, string][] = [
   ["businessSite", "Business website"],
@@ -156,8 +160,31 @@ const INTEL: [IntelItem, string][] = [
   ["dashboard", "Dashboard"],
 ];
 
+/** White card used for each block of the form and the summary. */
+const card = "rounded-panel border border-line bg-card sm:rounded-[20px]";
+
 function fmtDate(d: Date, market: Market) {
   return d.toLocaleDateString(MARKETS[market].locale, { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** One labelled block of the form. */
+function Group({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className={cn(card, "p-[18px] pb-1.5 sm:p-[22px] sm:pb-1.5")} aria-labelledby={id}>
+      <Typography variant="h5" as="h2" id={id} className="mb-4 font-sans text-base tracking-[-0.01em]">
+        {title}
+      </Typography>
+      {children}
+    </section>
+  );
 }
 
 export default function Planner() {
@@ -220,26 +247,28 @@ export default function Planner() {
   const validUntil = today ? new Date(today.getTime() + 30 * 86400000) : null;
 
   return (
-    <div className="planner wrap">
-      <header className="phead">
+    <Container className="pt-6 pb-28 sm:pt-10 lg:pb-20 print:max-w-none print:p-0">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-6 print:hidden">
         <div>
-          <div className="kicker">COST PLANNER</div>
-          <h1 className="ptitle">What will it cost, and how long will it take?</h1>
-          <p className="plead">
-            Every number traces back to hours and a rate. Change anything and the estimate, timeline and payment plan
-            update as you go.
-          </p>
+          <Typography variant="kicker">COST PLANNER</Typography>
+          <Typography variant="h2" className="my-2 max-w-[720px]">
+            What will it cost, and how long will it take?
+          </Typography>
+          <Typography variant="body" className="max-w-[600px]">
+            Every number traces back to hours and a rate. Change anything and the estimate, timeline and
+            payment plan update as you go.
+          </Typography>
         </div>
-        <div className="pclient noprint">
+        <div className="flex flex-wrap gap-2 max-sm:w-full">
           <input
-            className="field"
+            className={cn(fieldClass, "min-h-[42px] w-[200px] text-sm max-sm:w-auto max-sm:min-w-0 max-sm:flex-1")}
             placeholder="Prepared for (name)"
             aria-label="Prepared for"
             value={client.name}
             onChange={(e) => setClient({ ...client, name: e.target.value })}
           />
           <input
-            className="field"
+            className={cn(fieldClass, "min-h-[42px] w-[200px] text-sm max-sm:w-auto max-sm:min-w-0 max-sm:flex-1")}
             placeholder="Business"
             aria-label="Business name"
             value={client.company}
@@ -248,20 +277,25 @@ export default function Planner() {
         </div>
       </header>
 
-      <div className="printhead printonly">
-        <b>CHIMPANION.</b>
+      {/* Print-only letterhead — the planner doubles as the client's PDF. */}
+      <div className="hidden items-baseline gap-[18px] border-b-2 border-ink pb-2.5 print:flex">
+        <Typography variant="h5" as="b">
+          CHIMPANION.
+        </Typography>
         <div>
-          <div className="ptitle-print">Project estimate{client.company ? ` — ${client.company}` : ""}</div>
-          <div className="plain">
+          <Typography variant="h4" as="div">
+            Project estimate{client.company ? ` — ${client.company}` : ""}
+          </Typography>
+          <Typography variant="bodySm" as="div">
             {client.name && <>Prepared for {client.name} · </>}
             {est.ref}
             {today && <> · {fmtDate(today, scope.market)}</>}
             {validUntil && <> · valid until {fmtDate(validUntil, scope.market)}</>}
-          </div>
+          </Typography>
         </div>
       </div>
 
-      <div className="pmarket noprint">
+      <div className={cn(card, "mb-3.5 px-[18px] pt-[18px] pb-0.5 sm:px-[22px] print:hidden")}>
         <Choice
           label="Client's market"
           hint="Set from the visitor's location. Change it when you're pricing for a client somewhere else — rates, currency, tax, local vendors and compliance all follow."
@@ -271,22 +305,37 @@ export default function Planner() {
         />
       </div>
 
-      <div className="presets noprint" role="group" aria-label="Start from a reference project">
-        <span className="small">Start from</span>
+      <div
+        className="mb-5 flex flex-wrap items-center gap-1.5 print:hidden"
+        role="group"
+        aria-label="Start from a reference project"
+      >
+        <Typography variant="overline" className="mr-1.5">
+          Start from
+        </Typography>
         {PRESETS.map(([id, label]) => (
-          <button type="button" key={id} className="pchip" onClick={() => setScope({ ...BENCHMARKS[id], market: scope.market })}>
+          <button
+            type="button"
+            key={id}
+            className={chipClass(false)}
+            onClick={() => setScope({ ...BENCHMARKS[id], market: scope.market })}
+          >
             {label}
           </button>
         ))}
-        <button type="button" className="pchip ghostchip" onClick={() => setScope({ ...DEFAULT_SCOPE, market: scope.market })}>
+        <button
+          type="button"
+          className={cn(chipClass(false), "border-dashed bg-transparent text-muted")}
+          onClick={() => setScope({ ...DEFAULT_SCOPE, market: scope.market })}
+        >
           Clear
         </button>
       </div>
 
-      <div className="pgrid">
-        <div className="pform noprint">
-          <section className="pgroup" aria-labelledby="pg-goal">
-            <h2 id="pg-goal">Goal, timing, budget</h2>
+      {/* Form and summary sit side by side once there's room; stacked below that. */}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_330px] xl:grid-cols-[minmax(0,1fr)_380px] print:block">
+        <div className="grid min-w-0 gap-3.5 print:hidden">
+          <Group id="pg-goal" title="Goal, timing, budget">
             <Chips label="What has to change" options={GOALS} value={scope.goals} onChange={(goals) => set({ goals })} />
             <Choice label="Go-live deadline" options={TIMELINES} value={scope.timeline} onChange={(timeline) => set({ timeline })} />
             <Choice
@@ -296,10 +345,9 @@ export default function Planner() {
               value={scope.budget}
               onChange={(budget) => set({ budget })}
             />
-          </section>
+          </Group>
 
-          <section className="pgroup" aria-labelledby="pg-build">
-            <h2 id="pg-build">What we&apos;re building</h2>
+          <Group id="pg-build" title="What we're building">
             <Chips
               label="Build"
               hint="Leave empty for growth or intelligence work on what already exists."
@@ -329,10 +377,9 @@ export default function Planner() {
                 onChange={(migration) => set({ migration })}
               />
             )}
-          </section>
+          </Group>
 
-          <section className="pgroup" aria-labelledby="pg-features">
-            <h2 id="pg-features">What it needs to do</h2>
+          <Group id="pg-features" title="What it needs to do">
             <Chips
               label="Features on day one"
               hint="On a plain website, most of these use off-the-shelf tools instead of custom builds."
@@ -364,10 +411,9 @@ export default function Planner() {
               <Choice label="Products or listings" options={PRODUCTS} value={scope.products} onChange={(products) => set({ products })} />
             )}
             <Chips label="Connects to" options={integrationOptions(scope.market)} value={scope.integrations} onChange={(integrations) => set({ integrations })} />
-          </section>
+          </Group>
 
-          <section className="pgroup" aria-labelledby="pg-look">
-            <h2 id="pg-look">Look and content</h2>
+          <Group id="pg-look" title="Look and content">
             <Choice label="Design" options={DESIGN} value={scope.design} onChange={(design) => set({ design })} />
             <Choice label="Content" options={CONTENT} value={scope.content} onChange={(content) => set({ content })} />
             <Choice
@@ -376,60 +422,77 @@ export default function Planner() {
               value={String(scope.languages)}
               onChange={(v) => set({ languages: Number(v) })}
             />
-          </section>
+          </Group>
 
-          <section className="pgroup" aria-labelledby="pg-after">
-            <h2 id="pg-after">After launch</h2>
+          <Group id="pg-after" title="After launch">
             <Chips label="Growth" options={GROWTH} value={scope.growth} onChange={(growth) => set({ growth })} />
             <Chips label="Market intelligence" options={INTEL} value={scope.intel} onChange={(intel) => set({ intel })} />
-          </section>
+          </Group>
         </div>
 
-        <aside className="pside" aria-label="Estimate summary">
-          <div className="psum">
-            <div className="psum-top">
-              <span className="small">Estimate</span>
-              <span className="mono small">{est.ref}</span>
+        <aside
+          className="grid min-w-0 gap-3 lg:sticky lg:top-[88px] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto lg:pb-1 print:static print:max-h-none print:overflow-visible"
+          aria-label="Estimate summary"
+        >
+          <div id="plan-summary" className={cn(card, "scroll-mt-20 p-[18px] sm:p-[22px]")}>
+            <div className="mb-3 flex items-baseline justify-between">
+              <Typography variant="overline">Estimate</Typography>
+              <Typography variant="overline" className="font-mono tabular-nums">
+                {est.ref}
+              </Typography>
             </div>
             <Headline est={est} />
-            <div className="psum-actions noprint">
-              <button type="button" className="pill dark" onClick={() => window.print()} disabled={est.fixedPrice === 0}>
+            <div className="mt-4 flex gap-2 print:hidden">
+              <Button
+                variant="dark"
+                size="sm"
+                className="min-h-[42px] flex-1"
+                onClick={() => window.print()}
+                disabled={est.fixedPrice === 0}
+              >
                 Print / save PDF
-              </button>
-              <button type="button" className="pill ghost" onClick={copyLink}>
+              </Button>
+              <Button variant="ghost" size="sm" className="min-h-[42px] flex-1" onClick={copyLink}>
                 {copied ? "Link copied" : "Copy link"}
-              </button>
+              </Button>
             </div>
           </div>
-          <div className="noprint">
-            <Checks est={est} onApply={set} />
-          </div>
+          <Checks est={est} onApply={set} className="print:hidden" />
         </aside>
       </div>
 
       <EstimateDetail est={est} onRemove={(src) => set(removalPatch(scope, src))} />
 
-      <p className="pfine">
-        Estimates are planning figures from our rate card. The fixed price is confirmed in writing after a discovery
-        session.
-      </p>
+      <Typography variant="caption" className="mt-[18px] max-w-[70ch]">
+        Estimates are planning figures from our rate card. The fixed price is confirmed in writing after a
+        discovery session.
+      </Typography>
 
+      {/* Phone-only summary bar — the sidebar is far down the page there. */}
       {est.fixedPrice > 0 && (
         <button
           type="button"
-          className="pbar noprint"
-          onClick={() => document.querySelector(".psum")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          onClick={() => document.getElementById("plan-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className="fixed right-3 bottom-[calc(12px+env(safe-area-inset-bottom))] left-3 z-40 flex items-center justify-between rounded-chip border-0 bg-dark px-4 py-[11px] text-left text-white shadow-[0_10px_30px_rgba(0,0,0,0.25)] lg:hidden print:hidden"
         >
           <span>
-            <span className="lbl">Fixed price</span>
-            <span className="val">{fmt.short(est.fixedPrice)}</span>
+            <Typography variant="overline" tone="onDarkMuted" as="span" className="block text-2xs">
+              Fixed price
+            </Typography>
+            <Typography variant="mono" as="span" className="mt-0.5 block text-sm font-bold">
+              {fmt.short(est.fixedPrice)}
+            </Typography>
           </span>
-          <span style={{ textAlign: "right" }}>
-            <span className="lbl">Timeline</span>
-            <span className="val">{weeksLabel(est.timeline.weeks, est.timeline.weeksHigh)}</span>
+          <span className="text-right">
+            <Typography variant="overline" tone="onDarkMuted" as="span" className="block text-2xs">
+              Timeline
+            </Typography>
+            <Typography variant="mono" as="span" className="mt-0.5 block text-sm font-bold">
+              {weeksLabel(est.timeline.weeks, est.timeline.weeksHigh)}
+            </Typography>
           </span>
         </button>
       )}
-    </div>
+    </Container>
   );
 }

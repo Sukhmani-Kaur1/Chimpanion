@@ -6,8 +6,8 @@
 export const site = {
   name: "Chimpanion",
   tagline: "Build. Launch. Grow.",
-  url: "https://chimpanion.in",
-  email: "hello@chimpanion.in",
+  url: "https://chimpanion.com",
+  email: "hello@chimpanion.com",
   /** International format, digits only — used to build the wa.me link. */
   whatsapp: "919000000000",
   whatsappDisplay: "+91 90000 00000",

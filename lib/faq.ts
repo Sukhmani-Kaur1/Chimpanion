@@ -1,12 +1,31 @@
-/** Shared by the FAQ section and the FAQPage structured data, so the two can't drift apart. */
+import { BENCHMARKS } from "./pricing/benchmarks";
+import { estimate } from "./pricing/estimate";
+import { formatter, weeksLabel } from "./pricing/format";
+
+const inrShort = formatter("IN").short;
+
+/** Round for prose: nearest ₹5K under a lakh, ₹10K above. */
+const approx = (n: number) => inrShort(Math.round(n / (n < 100000 ? 5000 : 10000)) * (n < 100000 ? 5000 : 10000));
+
+const e = Object.fromEntries(Object.entries(BENCHMARKS).map(([k, s]) => [k, estimate(s)])) as Record<
+  keyof typeof BENCHMARKS,
+  ReturnType<typeof estimate>
+>;
+const big = [e.customStore, e.bookingApp, e.saasMvp];
+const weeks = (x: ReturnType<typeof estimate>) => weeksLabel(x.timeline.weeks, x.timeline.weeksHigh);
+
+/**
+ * Shared by the FAQ section and the FAQPage structured data. Prices and timelines come from the
+ * planner's own reference projects, so the copy can never contradict the calculator.
+ */
 export const faqs: { q: string; a: string }[] = [
   {
     q: "How much does a website or custom software cost?",
-    a: "A business website typically starts around ₹15,000–₹50,000. A business system with an admin panel, CRM and dashboards usually runs ₹1.5–3 lakh. E-commerce and customer platforms start near ₹4.5 lakh, and app or SaaS products are scoped individually. The planner on this page turns your actual requirements into a costed range with the hours behind it.",
+    a: `A one-page site starts around ${approx(e.landingPage.fixedPrice)}, and a typical six-page business website is about ${approx(e.businessSite.fixedPrice)}. A Shopify store usually lands near ${approx(e.shopifyStore.fixedPrice)}, and a business system with an admin panel, CRM and dashboards around ${approx(e.businessSystem.fixedPrice)}. Custom stores, apps and SaaS products usually start around ${approx(Math.min(...big.map((x) => x.fixedPrice)))} and grow with scope. All before GST. Outside India, the cost planner prices in US dollars, pounds or dirhams, with the local tax treatment and providers.`,
   },
   {
     q: "How long does a project take?",
-    a: "A straightforward business website is usually 3–5 weeks. A business system with custom workflows is 8–14 weeks. Larger platforms run longer and are delivered in phases so something useful goes live early rather than everything landing at the end.",
+    a: `A simple business website usually takes ${weeks(e.businessSite)}. A business system is around ${weeks(e.businessSystem)}, and apps or custom platforms ${Math.min(...big.map((x) => x.timeline.weeks))}–${Math.max(...big.map((x) => x.timeline.weeksHigh))} weeks. Bigger builds go live in phases, so something useful launches early rather than everything landing at the end.`,
   },
   {
     q: "Do I own the code, domain and data?",

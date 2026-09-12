@@ -39,7 +39,7 @@ export const steps: Step[] = [
   {
     key: "type",
     title: "What are we actually building?",
-    hint: "Combine as many as apply — each one adds its own build hours.",
+    hint: "Combine as many as apply. Growth and market intelligence come later.",
     type: "multi",
     opts: [
       ["website", "Business website", "Information + enquiries"],
@@ -48,8 +48,7 @@ export const steps: Step[] = [
       ["app", "Mobile app", "iOS / Android"],
       ["saas", "SaaS / software product", "A new digital product"],
       ["internal", "Internal system", "Operations / CRM / dashboard"],
-      ["growth", "Growth engine", "SEO / paid / lead generation"],
-      ["data", "Data / intelligence", "Market + competitor data"],
+      ["none", "Nothing new to build", "Grow or improve what already exists"],
     ],
   },
   {
@@ -130,12 +129,13 @@ export const steps: Step[] = [
     hint: "This won't change our number — it changes whether we flag a mismatch now instead of later.",
     type: "single",
     opts: [
-      ["50", "Under ₹50K", "Small, focused work"],
-      ["150", "₹50K–₹1.5L", "Lean digital build"],
-      ["300", "₹1.5L–₹3L", "Business system"],
-      ["500", "₹3L–₹5L", "Larger platform"],
-      ["1000", "₹5L–₹10L", "Complex product"],
-      ["more", "₹10L+", "Large / custom"],
+      // Labels are replaced with the visitor's market budgets at render time.
+      ["b1", "Under ₹50K", "Small, focused work"],
+      ["b2", "₹50K–₹1.5L", "Lean digital build"],
+      ["b3", "₹1.5L–₹3L", "Business system"],
+      ["b4", "₹3L–₹5L", "Larger platform"],
+      ["b5", "₹5L–₹10L", "Complex product"],
+      ["b6", "₹10L+", "Large / custom"],
       ["unknown", "Not sure yet", "Recommend a sensible path"],
     ],
   },

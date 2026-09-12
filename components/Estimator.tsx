@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { steps, optionLabels } from "@/lib/steps";
-import { estimate, inr, inrShort, type Answers } from "@/lib/estimate";
+import { estimate } from "@/lib/pricing/estimate";
+import { formatter, weeksLabel } from "@/lib/pricing/format";
+import { MARKETS } from "@/lib/pricing/markets";
+import { useMarket } from "@/lib/useMarket";
+import { fromWizard } from "@/lib/pricing/scope";
+import type { Estimate, Market } from "@/lib/pricing/types";
+import { Checks, Headline } from "./planner/Summary";
+
+type Answers = Record<string, string[]>;
 
 const SUMMARY_KEYS = ["timeline", "business", "type", "current", "features", "growth", "data", "design"];
 const SUMMARY_LABELS: Record<string, string> = {
@@ -27,8 +35,21 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
   const [sent, setSent] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const est = useMemo(() => estimate(answers), [answers]);
-  const step = steps[i];
+  const { market } = useMarket();
+  const scope = useMemo(() => fromWizard(answers, market), [answers, market]);
+  const est = useMemo(() => estimate(scope), [scope]);
+  const fmt = formatter(market);
+  const base = steps[i];
+  // Budget tiers are shown in the visitor's own currency.
+  const step =
+    base.key === "budget"
+      ? {
+          ...base,
+          opts: base.opts.map(([v, l, d]): [string, string, string] =>
+            v === "unknown" ? [v, l, d] : [v, MARKETS[market].budgets[v as keyof (typeof MARKETS)[Market]["budgets"]].label, d]
+          ),
+        }
+      : base;
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -95,8 +116,8 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
   }
 
   const progress = showResult ? 100 : ((i + 1) / steps.length) * 100;
-  const range = `${inrShort(est.low)}–${inrShort(est.high)}`;
-  const weeks = `${est.weeks}–${est.weeks + 1} wks`;
+  const range = est.fixedPrice ? `${fmt.short(est.low)}–${fmt.short(est.high)}` : "—";
+  const weeks = est.fixedPrice ? weeksLabel(est.timeline.weeks, est.timeline.weeksHigh) : "—";
 
   return (
     <div className="est" role="dialog" aria-modal="true" aria-label="Project planner">
@@ -237,7 +258,8 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
             )}
           </div>
           <div className="footnote">
-            Final scope is confirmed after a discovery call.
+            Prices in {MARKETS[market].currency}, set from your location. Final scope is confirmed
+            after a discovery call.
           </div>
         </aside>
       </div>
@@ -245,114 +267,31 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Result({
-  est,
-  sent,
-  onSend,
-}: {
-  est: ReturnType<typeof estimate>;
-  sent: boolean;
-  onSend: () => void;
-}) {
-  const marginPct = Math.round(est.margin * 100);
+function Result({ est, sent, onSend }: { est: Estimate; sent: boolean; onSend: () => void }) {
   return (
     <div className="qwrap">
-      <h2 className="q">Here&apos;s the number, and the reasoning.</h2>
-      <p className="hint">
-        A planning range based on what you told us. Final scope is confirmed after discovery.
-      </p>
+      <h2 className="q">Here&apos;s the number, and what&apos;s behind it.</h2>
+      <p className="hint">A planning estimate from our rate card. The fixed price is confirmed after a discovery session.</p>
       <div className="resultscroll">
-        <div className="resultgrid">
-          <div className="resultbox">
-            <div className="small">PLANNING RANGE</div>
-            <div className="bigprice">
-              {inr(est.low)} – {inr(est.high)}
-            </div>
-            <div className="small plain">
-              Estimated delivery: <b>{est.weeks}–{est.weeks + 1} weeks</b>
-            </div>
-            <div className={`chip ${est.budgetFit.status}`}>{est.budgetFit.message}</div>
-          </div>
-          <div className="resultbox">
-            <div className="small">RECOMMENDED START</div>
-            <h3 style={{ marginTop: 6 }}>{est.recommendation}</h3>
-            <div className="small plain">{est.recoCopy}</div>
-          </div>
+        <div className="resultbox">
+          <Headline est={est} />
         </div>
 
-        <div className="resultbox" style={{ marginTop: 12 }}>
-          <div className="small">HOW IT ADDS UP</div>
-          <div className="tablewrap">
-            <table className="ledger">
-              <thead>
-                <tr>
-                  <th>Line item</th>
-                  <th className="num">Hours</th>
-                  <th className="num">Rate</th>
-                  <th className="num">Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {est.lines.map((l) => (
-                  <tr key={l.label}>
-                    <td>{l.label}</td>
-                    <td className="num">{l.hrs} hrs</td>
-                    <td className="num">{inr(l.rate)}/hr</td>
-                    <td className="num">{inr(l.cost)}</td>
-                  </tr>
-                ))}
-                {est.adjust && (
-                  <tr className="adjust">
-                    <td colSpan={3}>{est.adjust.label}</td>
-                    <td className="num">
-                      {est.adjust.cost >= 0 ? "+" : "−"}
-                      {inr(Math.abs(est.adjust.cost))}
-                    </td>
-                  </tr>
-                )}
-                <tr className="total">
-                  <td colSpan={3}>Midpoint (range is ±{marginPct}%)</td>
-                  <td className="num">{inr(est.subtotal)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <details className="assumptions">
-            <summary>Assumptions &amp; exclusions</summary>
-            <ul>
-              <li>Blended team rates of ₹1,200–₹1,800/hr depending on discipline.</li>
-              <li>
-                The ±{marginPct}% range reflects how well-defined your timeline and budget are right
-                now — it narrows after discovery.
-              </li>
-              <li>Excludes GST, third-party spend, and everything listed under &ldquo;not included&rdquo;.</li>
-              <li>Assumes the scope selected here. Features added after kickoff are quoted separately.</li>
+        <Checks est={est} />
+
+        {est.fixedPrice > 0 && (
+          <div className="resultbox" style={{ marginTop: 12 }}>
+            <div className="small">WHAT YOU&apos;D BE PAYING FOR</div>
+            <ul className="recurring">
+              {est.packages.map((p) => (
+                <li key={p.id}>
+                  <span>{p.label}</span>
+                  <span>{formatter(est.market).money(p.cost)}</span>
+                </li>
+              ))}
             </ul>
-          </details>
-        </div>
-
-        <div className="resultbox" style={{ marginTop: 12 }}>
-          <div className="small">NOT INCLUDED IN THIS FEE</div>
-          <ul className="recurring">
-            {est.recurring.map((r) => (
-              <li key={r.label}>
-                <span>{r.label}</span>
-                <span>{r.range}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="resultbox" style={{ marginTop: 12 }}>
-          <div className="small">WHAT WE&apos;D WORK ON</div>
-          <div className="scopechips">
-            {est.lines.map((l) => (
-              <span className="scopechip" key={l.label}>
-                {l.label}
-              </span>
-            ))}
           </div>
-        </div>
+        )}
 
         <div className="resultbox" style={{ marginTop: 12, marginBottom: 4 }}>
           <div className="small">GET THIS AS A DOCUMENT</div>
@@ -361,11 +300,7 @@ function Result({
               Saved — in production this posts to the CRM and emails you the breakdown.
             </div>
           ) : (
-            <button
-              className="pill lime"
-              style={{ width: "100%", marginTop: 10 }}
-              onClick={onSend}
-            >
+            <button className="pill lime" style={{ width: "100%", marginTop: 10 }} onClick={onSend}>
               Send me the breakdown →
             </button>
           )}

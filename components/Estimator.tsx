@@ -9,6 +9,10 @@ import { useMarket } from "@/lib/useMarket";
 import { fromWizard } from "@/lib/pricing/scope";
 import type { Estimate, Market } from "@/lib/pricing/types";
 import { Checks, Headline } from "./planner/Summary";
+import Button from "./ui/Button";
+import { fieldClass } from "./ui/Layout";
+import Typography from "./ui/Typography";
+import { cn } from "@/lib/cn";
 
 type Answers = Record<string, string[]>;
 
@@ -25,6 +29,9 @@ const SUMMARY_LABELS: Record<string, string> = {
 };
 
 const emptyContact = { name: "", company: "", email: "", phone: "", note: "" };
+
+/** Card on the page background, used for each block of the result screen. */
+const resultBox = "rounded-chip border border-line bg-card p-4 sm:rounded-card sm:p-5";
 
 export default function Estimator({ onClose }: { onClose: () => void }) {
   const [i, setI] = useState(0);
@@ -118,60 +125,101 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
   const progress = showResult ? 100 : ((i + 1) / steps.length) * 100;
   const range = est.fixedPrice ? `${fmt.short(est.low)}–${fmt.short(est.high)}` : "—";
   const weeks = est.fixedPrice ? weeksLabel(est.timeline.weeks, est.timeline.weeksHigh) : "—";
+  const scopeSoFar = SUMMARY_KEYS.filter((k) => selected(k).length > 0);
 
   return (
-    <div className="est" role="dialog" aria-modal="true" aria-label="Project planner">
-      <div className="estcard" ref={cardRef} tabIndex={-1}>
-        <div className="estmain">
-          <div className="esttop">
-            <b>CHIMPANION</b>
-            <span className="stepmeta">
+    <div
+      className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 lg:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Project planner"
+    >
+      {/* Full screen on phones, a centred card once there's room for the sidebar. */}
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        className="grid h-dvh max-h-dvh w-full grid-cols-1 overflow-hidden bg-bg lg:h-[min(820px,94dvh)] lg:w-[min(1180px,100%)] lg:grid-cols-[1fr_350px] lg:rounded-surface"
+      >
+        <div className="relative flex min-h-0 flex-col p-4 pb-[calc(84px+env(safe-area-inset-bottom))] lg:p-[26px_30px] lg:pb-[26px]">
+          <div className="mb-3.5 flex items-center justify-between gap-2.5">
+            <Typography variant="h5" as="b" className="text-base">
+              CHIMPANION
+            </Typography>
+            <Typography variant="mono" className="text-xs font-bold text-faint">
               {showResult ? "PLAN READY" : `${String(i + 1).padStart(2, "0")} / ${steps.length}`}
-            </span>
-            <button className="close" onClick={onClose} aria-label="Close planner">
+            </Typography>
+            <button
+              onClick={onClose}
+              aria-label="Close planner"
+              className="flex size-[46px] flex-none items-center justify-center rounded-full border border-line bg-card text-2xl leading-none"
+            >
               ×
             </button>
           </div>
 
-          <div className="prog">
-            <span style={{ width: `${progress}%` }} />
+          <div className="mb-5 h-1.5 flex-none overflow-hidden rounded-full bg-line">
+            <span
+              className="block h-full bg-dark transition-[width] duration-250"
+              style={{ width: `${progress}%` }}
+            />
           </div>
 
-          <div className="livestat">
+          {/* Compact live estimate — stands in for the sidebar on small screens. */}
+          <div className="mb-4 flex flex-none items-center justify-between gap-3 rounded-chip bg-dark px-3.5 py-[11px] text-white lg:hidden">
             <div>
-              <div className="lbl">Live range</div>
-              <div className="val">{range}</div>
+              <Typography variant="overline" tone="onDarkMuted" className="text-2xs">
+                Live range
+              </Typography>
+              <Typography variant="mono" as="div" className="mt-0.5 text-sm font-bold">
+                {range}
+              </Typography>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div className="lbl">Timeline</div>
-              <div className="val">{weeks}</div>
+            <div className="text-right">
+              <Typography variant="overline" tone="onDarkMuted" className="text-2xs">
+                Timeline
+              </Typography>
+              <Typography variant="mono" as="div" className="mt-0.5 text-sm font-bold">
+                {weeks}
+              </Typography>
             </div>
           </div>
 
           {showResult ? (
             <Result est={est} sent={sent} onSend={() => setSent(true)} />
           ) : (
-            <div className="qwrap">
-              <h2 className="q">{step.title}</h2>
-              <p className="hint">{step.hint}</p>
-              {error && <div className="formerr">{error}</div>}
+            <div className="flex min-h-0 flex-1 flex-col">
+              <Typography variant="h2" className="flex-none text-3xl">
+                {step.title}
+              </Typography>
+              <Typography variant="bodySm" className="mt-2 mb-3.5 flex-none sm:mb-[18px]">
+                {step.hint}
+              </Typography>
+              {error && (
+                <Typography
+                  variant="bodySm"
+                  tone="warn"
+                  className="mb-2.5 rounded-[10px] bg-warn-bg px-3 py-2.5 font-semibold"
+                >
+                  {error}
+                </Typography>
+              )}
 
               {step.type === "form" ? (
-                <div style={{ overflowY: "auto", flex: 1, minHeight: 0, paddingRight: 4 }}>
+                <div className="min-h-0 flex-1 overflow-y-auto pr-1">
                   <input
-                    className="field"
+                    className={cn(fieldClass, "mb-2.5")}
                     placeholder="Name"
                     value={contact.name}
                     onChange={(e) => setContact({ ...contact, name: e.target.value })}
                   />
                   <input
-                    className="field"
+                    className={cn(fieldClass, "mb-2.5")}
                     placeholder="Business / company"
                     value={contact.company}
                     onChange={(e) => setContact({ ...contact, company: e.target.value })}
                   />
                   <input
-                    className="field"
+                    className={cn(fieldClass, "mb-2.5")}
                     type="email"
                     inputMode="email"
                     placeholder="Work email"
@@ -179,7 +227,7 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
                     onChange={(e) => setContact({ ...contact, email: e.target.value })}
                   />
                   <input
-                    className="field"
+                    className={cn(fieldClass, "mb-2.5")}
                     type="tel"
                     inputMode="tel"
                     placeholder="Phone / WhatsApp"
@@ -187,29 +235,38 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
                     onChange={(e) => setContact({ ...contact, phone: e.target.value })}
                   />
                   <textarea
-                    className="field"
+                    className={cn(fieldClass, "mb-2.5")}
                     rows={3}
                     placeholder="Anything else we should know?"
                     value={contact.note}
                     onChange={(e) => setContact({ ...contact, note: e.target.value })}
                   />
-                  <div className="small plain">
-                    The full breakdown appears on the next screen.
-                  </div>
+                  <Typography variant="caption">The full breakdown appears on the next screen.</Typography>
                 </div>
               ) : (
-                <div className="opts">
+                <div className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-y-auto pr-1 sm:grid-cols-2 sm:gap-2.5">
                   {step.opts.map(([value, label, detail]) => {
                     const isOn = selected(step.key).includes(value);
                     return (
                       <button
                         key={value}
-                        className={`opt${isOn ? " selected" : ""}`}
                         aria-pressed={isOn}
                         onClick={() => pick(step.key, value, step.type)}
+                        className={cn(
+                          "min-h-[58px] rounded-chip border border-line bg-card p-3.5 text-left transition-[border-color,background-color] duration-100 hover:border-line-strong sm:min-h-[46px] sm:rounded-[15px] sm:p-[15px]",
+                          isOn && "border-2 border-ink bg-soft p-[13px] sm:p-3.5"
+                        )}
                       >
-                        <strong>{label}</strong>
-                        <small>{detail}</small>
+                        <Typography variant="bodySm" as="strong" tone="ink" className="block font-bold">
+                          {label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          as="small"
+                          className={cn("mt-1 block", isOn && "text-[#3c4a1e]")}
+                        >
+                          {detail}
+                        </Typography>
                       </button>
                     );
                   })}
@@ -218,49 +275,65 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          <div className="estfoot">
-            <button
-              className="pill ghost"
+          {/* Fixed action bar on phones; part of the column on desktop. */}
+          <div className="absolute right-0 bottom-0 left-0 z-5 flex flex-none justify-between gap-2.5 border-t border-line bg-bg px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] lg:static lg:mt-3.5 lg:px-0 lg:pt-3.5 lg:pb-0">
+            <Button
+              variant="ghost"
               onClick={goBack}
+              className="max-lg:flex-1"
               style={{ visibility: i === 0 && !showResult ? "hidden" : "visible" }}
             >
               ← Back
-            </button>
+            </Button>
             {!showResult && (
-              <button className="pill lime" onClick={goNext}>
+              <Button variant="lime" onClick={goNext} className="max-lg:flex-1">
                 {i === steps.length - 1 ? "Build my plan →" : "Continue →"}
-              </button>
+              </Button>
             )}
           </div>
         </div>
 
-        <aside className="side">
-          <div className="sidecap">Live planning range</div>
-          <div className="sideprice">{range}</div>
-          <div className="line" />
-          <div className="sidecap">Timeline</div>
-          <div className="sidetime">{weeks}</div>
-          <div className="line" />
-          <div className="sidecap">Scope so far</div>
-          <div className="summary">
-            {SUMMARY_KEYS.filter((k) => selected(k).length > 0).length === 0 ? (
-              <div style={{ color: "#8a8a80" }}>Your plan builds here as you answer.</div>
+        <aside className="hidden flex-col overflow-y-auto bg-dark p-7 text-white lg:flex">
+          <Typography variant="overline" tone="onDarkMuted" className="text-2xs tracking-[0.1em]">
+            Live planning range
+          </Typography>
+          <Typography variant="priceSm" className="mt-[7px]">
+            {range}
+          </Typography>
+          <div className="my-5 h-px bg-[#333330]" />
+          <Typography variant="overline" tone="onDarkMuted" className="text-2xs tracking-[0.1em]">
+            Timeline
+          </Typography>
+          <Typography variant="priceSm" className="mt-1.5">
+            {weeks}
+          </Typography>
+          <div className="my-5 h-px bg-[#333330]" />
+          <Typography variant="overline" tone="onDarkMuted" className="text-2xs tracking-[0.1em]">
+            Scope so far
+          </Typography>
+          <div className="text-sm">
+            {scopeSoFar.length === 0 ? (
+              <Typography variant="bodySm" tone="faint" className="mt-2">
+                Your plan builds here as you answer.
+              </Typography>
             ) : (
-              SUMMARY_KEYS.filter((k) => selected(k).length > 0).map((k) => {
+              scopeSoFar.map((k) => {
                 const v = selected(k);
                 return (
-                  <div className="sumrow" key={k}>
+                  <div key={k} className="flex justify-between gap-2.5 py-[7px] text-dark-text">
                     <span>{SUMMARY_LABELS[k]}</span>
-                    <span>{v.length === 1 ? optionLabels[v[0]] ?? v[0] : `${v.length} selected`}</span>
+                    <span className="text-right text-dark-muted">
+                      {v.length === 1 ? optionLabels[v[0]] ?? v[0] : `${v.length} selected`}
+                    </span>
                   </div>
                 );
               })
             )}
           </div>
-          <div className="footnote">
-            Prices in {MARKETS[market].currency}, set from your location. Final scope is confirmed
-            after a discovery call.
-          </div>
+          <Typography variant="fine" tone="onDarkMuted" className="mt-auto pt-4 leading-[1.6]">
+            Prices in {MARKETS[market].currency}, set from your location. Final scope is confirmed after a
+            discovery call.
+          </Typography>
         </aside>
       </div>
     </div>
@@ -269,40 +342,54 @@ export default function Estimator({ onClose }: { onClose: () => void }) {
 
 function Result({ est, sent, onSend }: { est: Estimate; sent: boolean; onSend: () => void }) {
   return (
-    <div className="qwrap">
-      <h2 className="q">Here&apos;s the number, and what&apos;s behind it.</h2>
-      <p className="hint">A planning estimate from our rate card. The fixed price is confirmed after a discovery session.</p>
-      <div className="resultscroll">
-        <div className="resultbox">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <Typography variant="h2" className="flex-none text-3xl">
+        Here&apos;s the number, and what&apos;s behind it.
+      </Typography>
+      <Typography variant="bodySm" className="mt-2 mb-3.5 flex-none sm:mb-[18px]">
+        A planning estimate from our rate card. The fixed price is confirmed after a discovery session.
+      </Typography>
+
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+        <div className={resultBox}>
           <Headline est={est} />
         </div>
 
-        <Checks est={est} />
+        <Checks est={est} className="mt-3" />
 
         {est.fixedPrice > 0 && (
-          <div className="resultbox" style={{ marginTop: 12 }}>
-            <div className="small">WHAT YOU&apos;D BE PAYING FOR</div>
-            <ul className="recurring">
+          <div className={cn(resultBox, "mt-3")}>
+            <Typography variant="overline">WHAT YOU&apos;D BE PAYING FOR</Typography>
+            <ul className="mt-2 list-none p-0 text-sm">
               {est.packages.map((p) => (
-                <li key={p.id}>
+                <li
+                  key={p.id}
+                  className="flex justify-between gap-2.5 border-b border-dashed border-line py-2 last:border-b-0"
+                >
                   <span>{p.label}</span>
-                  <span>{formatter(est.market).money(p.cost)}</span>
+                  <span className="text-right font-mono tabular-nums text-muted">
+                    {formatter(est.market).money(p.cost)}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        <div className="resultbox" style={{ marginTop: 12, marginBottom: 4 }}>
-          <div className="small">GET THIS AS A DOCUMENT</div>
+        <div className={cn(resultBox, "mt-3 mb-1")}>
+          <Typography variant="overline">GET THIS AS A DOCUMENT</Typography>
           {sent ? (
-            <div className="success" style={{ marginTop: 10 }}>
+            <Typography
+              variant="bodySm"
+              tone="good"
+              className="mt-2.5 rounded-field bg-good-bg p-3 font-semibold"
+            >
               Saved — in production this posts to the CRM and emails you the breakdown.
-            </div>
+            </Typography>
           ) : (
-            <button className="pill lime" style={{ width: "100%", marginTop: 10 }} onClick={onSend}>
+            <Button variant="lime" className="mt-2.5 w-full" onClick={onSend}>
               Send me the breakdown →
-            </button>
+            </Button>
           )}
         </div>
       </div>

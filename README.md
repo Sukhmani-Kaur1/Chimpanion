@@ -19,7 +19,7 @@ npm test        # pricing engine — node's built-in runner, no extra dependenci
 app/
   layout.tsx        fonts, metadata, structured data, estimator provider
   page.tsx          section composition
-  globals.css       design tokens + all component styles
+  globals.css       Tailwind entry + design tokens (colour, fluid type scale, radii)
   admin/            internal, password-protected, never indexed
     page.tsx          dashboard + reference prices
     planner/          the full cost planner (use this in meetings)
@@ -30,6 +30,11 @@ app/
   robots.ts         generates /robots.txt
 proxy.ts            guards every /admin route
 components/
+  ui/                     the design system
+    Typography.tsx          every text style, one component — see below
+    Button.tsx              the pill button, plus pillClass() for links and submits
+    Layout.tsx              Container, Section, SectionHead, Card, Chip, Tag, fieldClass
+    Table.tsx               ledger tables: headers, numeric cells, mobile scroller
   Nav / Hero / Services / ExampleAndTrust / Team / Faq / Contact / Footer
   StructuredData.tsx      JSON-LD: ProfessionalService, WebSite, FAQPage
   EstimatorProvider.tsx   client context so any CTA can open the quick wizard
@@ -37,6 +42,7 @@ components/
   Estimator.tsx           the nine-question wizard for site visitors
   planner/                the full planner: scope form, summary, proposal sections
 lib/
+  cn.ts             class merge helper (clsx + tailwind-merge, taught our custom scales)
   pricing/          the costing engine — pure TypeScript, no React
     ratecard.ts       EVERY tunable number: rates, hours, risk, capacity, policies
     scope.ts          inputs: defaults, validation, share-link encoding
@@ -97,11 +103,38 @@ Still to do, and it needs your accounts: verify the domain in Google Search Cons
 `sitemap.xml`, and set up analytics. Ranking for anything competitive will also need pages beyond
 this one — a page per service or per city is the usual next step.
 
+## Design system
+
+Tailwind v4, configured entirely in `app/globals.css` — there's no `tailwind.config.js`. The
+`@theme` block is the source of truth for colour, type, radii and the content width; everything
+there becomes a utility (`--color-ink` → `text-ink`, `--radius-panel` → `rounded-panel`).
+
+**Type is fluid, not stepped.** Tailwind's own `--text-*` scale is overridden with `clamp()` values
+that interpolate between a 360px and a 1440px viewport, so every size grows smoothly with the
+screen. A component therefore never needs `text-sm md:text-base lg:text-lg` — `text-base` is
+already responsive. Don't add breakpoint font sizes; change the scale instead.
+
+**All text goes through `<Typography>`** (`components/ui/Typography.tsx`). Pick a `variant`
+(`display`, `h2`, `lead`, `body`, `bodySm`, `caption`, `kicker`, `overline`, `label`, `price`,
+`mono`…), optionally a `tone`, and `as` when the semantic tag differs from the default:
+
+```tsx
+<Typography variant="h2" as="h3">Six stages.</Typography>
+<Typography variant="kicker" tone="onDarkMuted">HOW WE WORK</Typography>
+```
+
+`className` overrides win over the variant's own classes — `lib/cn.ts` runs tailwind-merge, taught
+about the custom `tracking-*` and `rounded-*` steps so they de-duplicate properly.
+
+Layout primitives live in `components/ui/Layout.tsx`: `Container` (the 1240px column and its
+gutters), `Section` (vertical rhythm), `SectionHead`, `Card`, `Chip`, `Tag` and `fieldClass`.
+Inputs use a 16px minimum so iOS doesn't zoom on focus.
+
 ## Mobile copy length
 
-Supplementary sentences carry `.desk-only` (block) or `.desk-only-i` (inline). They're hidden below
-641px and shown above it, which trims roughly a fifth of the visible copy on phones while leaving
-the full text in the DOM for crawlers.
+Supplementary sentences are wrapped in `hidden sm:inline`. They're hidden below 640px and shown
+above it, which trims roughly a fifth of the visible copy on phones while leaving the full text in
+the DOM for crawlers.
 
 ## The cost planner
 

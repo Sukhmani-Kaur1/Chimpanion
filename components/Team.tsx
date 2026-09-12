@@ -1,3 +1,6 @@
+import { Container, Section, SectionHead } from "./ui/Layout";
+import Typography from "./ui/Typography";
+
 const caps: [string, string][] = [
   ["Product", "Discovery · Requirements · Roadmaps"],
   ["Engineering", "Full-stack · Backend · APIs · Infrastructure"],
@@ -9,24 +12,26 @@ const caps: [string, string][] = [
 
 export default function Team() {
   return (
-    <section className="section" id="team" aria-labelledby="team-heading">
-      <div className="wrap">
-        <div className="sectionhead">
-          <div>
-            <div className="kicker">THE TEAM</div>
-            <h2 id="team-heading">A full team, without six salaries.</h2>
-          </div>
-          <p>On the stages you need, for the months you need them.</p>
-        </div>
-        <div className="caps">
+    <Section id="team" aria-labelledby="team-heading">
+      <Container>
+        <SectionHead kicker="THE TEAM" title="A full team, without six salaries." titleId="team-heading">
+          On the stages you need, for the months you need them.
+        </SectionHead>
+
+        {/* Two up on phones, three on tablets, all six across on desktop. */}
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3 xl:grid-cols-6">
           {caps.map(([name, detail]) => (
-            <div className="cap" key={name}>
-              <b>{name}</b>
-              <span>{detail}</span>
+            <div key={name} className="rounded-chip border border-line bg-card p-3.5 sm:rounded-card sm:p-[18px]">
+              <Typography variant="h5" as="b" className="block text-base tracking-[-0.01em]">
+                {name}
+              </Typography>
+              <Typography variant="caption" as="span" className="mt-1.5 block">
+                {detail}
+              </Typography>
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }

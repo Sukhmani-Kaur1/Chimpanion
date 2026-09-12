@@ -1,3 +1,6 @@
+import { Card, Container, Section } from "./ui/Layout";
+import Typography from "./ui/Typography";
+
 const today = [
   "Directory leads that go cold in a day",
   "Quotations typed by hand into WhatsApp",
@@ -19,39 +22,56 @@ const promises = [
   "No guaranteed rankings or lead numbers. We'll tell you what's realistic before you pay.",
 ];
 
+function Column({ heading, items }: { heading: string; items: string[] }) {
+  return (
+    <div className="rounded-card border border-[#d9d8cd] bg-card p-[18px]">
+      <Typography variant="overline" className="tracking-[0.09em]">
+        {heading}
+      </Typography>
+      {items.map((t) => (
+        <Typography variant="bodySm" key={t} className="my-2.5">
+          {t}
+        </Typography>
+      ))}
+    </div>
+  );
+}
+
 export default function ExampleAndTrust() {
   return (
-    <section className="section" aria-labelledby="example-heading">
-      <div className="wrap split">
-        <div className="example" id="example">
-          <div className="kicker">EXAMPLE: A MODULAR KITCHEN BUSINESS</div>
-          <h2 id="example-heading">Don&apos;t buy a website. Buy a faster sales cycle.</h2>
-          <div className="ba">
-            <div>
-              <b>TODAY</b>
-              {today.map((t) => (
-                <p key={t}>{t}</p>
-              ))}
-            </div>
-            <div>
-              <b>WITH US</b>
-              {withUs.map((t) => (
-                <p key={t}>{t}</p>
-              ))}
-            </div>
+    <Section aria-labelledby="example-heading">
+      <Container className="grid gap-4 lg:grid-cols-2">
+        <div id="example" className="rounded-panel bg-[#ebeae2] p-6 sm:rounded-[28px] sm:p-8">
+          <Typography variant="kicker">EXAMPLE: A MODULAR KITCHEN BUSINESS</Typography>
+          <Typography variant="h2" id="example-heading" className="mt-2 text-4xl">
+            Don&apos;t buy a website. Buy a faster sales cycle.
+          </Typography>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <Column heading="TODAY" items={today} />
+            <Column heading="WITH US" items={withUs} />
           </div>
         </div>
-        <div className="panel" id="trust">
-          <div className="kicker">WHAT YOU PAY FOR</div>
-          <h2>And what you don&apos;t.</h2>
+
+        <Card id="trust" className="p-6 sm:p-8">
+          <Typography variant="kicker">WHAT YOU PAY FOR</Typography>
+          <Typography variant="h2" className="mt-2 text-4xl">
+            And what you don&apos;t.
+          </Typography>
           {promises.map((p) => (
-            <div className="check" key={p}>
-              <i>✓</i>
-              <span>{p}</span>
+            <div className="my-3.5 flex gap-3" key={p}>
+              <i
+                aria-hidden="true"
+                className="mt-px flex size-5 flex-none items-center justify-center rounded-full bg-accent text-xs font-black text-accent-ink not-italic"
+              >
+                ✓
+              </i>
+              <Typography variant="bodySm" as="span" tone="body">
+                {p}
+              </Typography>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
+        </Card>
+      </Container>
+    </Section>
   );
 }

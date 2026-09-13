@@ -2,6 +2,7 @@ import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
 import ExampleAndTrust from "@/components/ExampleAndTrust";
+import MediaPromo from "@/components/MediaPromo";
 import Team from "@/components/Team";
 import Faq from "@/components/Faq";
 import Contact from "@/components/Contact";
@@ -15,6 +16,7 @@ export default function Page() {
         <Hero />
         <Services />
         <ExampleAndTrust />
+        <MediaPromo />
         <Team />
         <Faq />
         <Contact />

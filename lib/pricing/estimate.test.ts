@@ -341,7 +341,24 @@ describe("markets", () => {
       const e = inMarket(BENCHMARKS.businessSite, m);
       assert.equal(e.tax, 0);
       assert.equal(e.total, e.fixedPrice);
-      assert.match(e.taxNote, /GST|VAT|export/i);
+      assert.ok(e.taxNote.length > 0, `${m} needs a tax note`);
+    }
+  });
+
+  test("a non-India estimate never mentions India, GST or rupees", () => {
+    for (const m of ["US", "UK", "AE"] as const) {
+      for (const scope of [BENCHMARKS.customStore, BENCHMARKS.businessSite, BENCHMARKS.saasMvp]) {
+        const e = inMarket(scope, m);
+        const client = [
+          ...e.packages.map((p) => `${p.label} ${p.detail}`),
+          ...e.assumptions,
+          ...e.exclusions,
+          ...e.disciplines.map((d) => d.label),
+          e.taxNote,
+          e.budget.message,
+        ].join(" · ");
+        assert.doesNotMatch(client, /\bIndian?\b|\bGST\b|₹/i, `${m}: ${client.slice(0, 120)}`);
+      }
     }
   });
 
@@ -380,6 +397,23 @@ describe("markets", () => {
     const e = estimate({ ...BENCHMARKS.businessSite, market: "US", budget: "b2" });
     assert.ok(["good", "under"].includes(e.budget.status), e.budget.message);
     assert.match(e.budget.message, /\$/);
+  });
+});
+
+describe("client-facing components", () => {
+  test("no currency symbol or tax name is hardcoded into what a client reads", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const dir = new URL("../../components/planner/", import.meta.url);
+    // The market switcher deliberately names each currency; everything else must ask the formatter.
+    const allowed = /MARKET_OPTIONS|\["(IN|US|UK|AE)",/;
+    for (const file of readdirSync(dir).filter((f) => f.endsWith(".tsx"))) {
+      readFileSync(new URL(file, dir), "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (allowed.test(line)) return;
+          assert.doesNotMatch(line, /[₹£]|\bAED\b|\bGST\b/, `${file}:${i + 1} hardcodes a currency or tax name`);
+        });
+    }
   });
 });
 

@@ -14,6 +14,8 @@ type Range = [number, number];
 export interface MarketSpec {
   id: Market;
   name: string;
+  /** What the one-off paid media plan sells for here. A local price point, not a conversion. */
+  mediaPlanPrice: number;
   currency: string;
   /** Printed before amounts: "₹", "$", "£", "AED ". */
   prefix: string;
@@ -71,6 +73,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
   IN: {
     id: "IN",
     name: "India",
+    mediaPlanPrice: 999,
     currency: "INR",
     prefix: "₹",
     locale: "en-IN",
@@ -132,6 +135,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
   US: {
     id: "US",
     name: "United States",
+    mediaPlanPrice: 15,
     currency: "USD",
     prefix: "$",
     locale: "en-US",
@@ -140,7 +144,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
     tax: {
       rate: 0,
       label: "Sales tax",
-      note: "No Indian GST — this is an export of services. Confirm any local tax treatment with your accountant.",
+      note: "No tax is added to this invoice. Confirm local treatment with your accountant.",
     },
     invoicing: "Invoiced in USD; international transfer fees are paid by the sender.",
     budgets: {
@@ -197,6 +201,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
   UK: {
     id: "UK",
     name: "United Kingdom",
+    mediaPlanPrice: 12,
     currency: "GBP",
     prefix: "£",
     locale: "en-GB",
@@ -205,7 +210,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
     tax: {
       rate: 0,
       label: "VAT",
-      note: "No VAT charged — as an overseas supplier, VAT-registered clients account for it under the reverse charge.",
+      note: "VAT is not charged. VAT-registered businesses account for it under the reverse charge.",
     },
     invoicing: "Invoiced in GBP.",
     budgets: {
@@ -262,6 +267,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
   AE: {
     id: "AE",
     name: "UAE",
+    mediaPlanPrice: 49,
     currency: "AED",
     prefix: "AED ",
     locale: "en-AE",
@@ -270,7 +276,7 @@ export const MARKETS: Record<Market, MarketSpec> = {
     tax: {
       rate: 0,
       label: "VAT",
-      note: "No Indian GST — this is an export of services. VAT-registered UAE clients account for 5% VAT under the reverse charge.",
+      note: "VAT is not charged. VAT-registered businesses in the UAE account for 5% VAT under the reverse charge.",
     },
     invoicing: "Invoiced in AED, or USD on request.",
     budgets: {

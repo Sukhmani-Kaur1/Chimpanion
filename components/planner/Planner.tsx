@@ -231,33 +231,54 @@ export default function Planner() {
           </p>
         </div>
         <div className="pclient noprint">
-          <input
-            className="field"
-            placeholder="Prepared for (name)"
-            aria-label="Prepared for"
-            value={client.name}
-            onChange={(e) => setClient({ ...client, name: e.target.value })}
-          />
-          <input
-            className="field"
-            placeholder="Business"
-            aria-label="Business name"
-            value={client.company}
-            onChange={(e) => setClient({ ...client, company: e.target.value })}
-          />
+          <div className="pf-label">Who this estimate is for</div>
+          <p className="pf-hint">Both appear at the top of the printed estimate.</p>
+          <div className="pclient-fields">
+            <input
+              className="field"
+              placeholder="Client name"
+              aria-label="Client name"
+              value={client.name}
+              onChange={(e) => setClient({ ...client, name: e.target.value })}
+            />
+            <input
+              className="field"
+              placeholder="Business"
+              aria-label="Business name"
+              value={client.company}
+              onChange={(e) => setClient({ ...client, company: e.target.value })}
+            />
+          </div>
         </div>
       </header>
 
       <div className="printhead printonly">
-        <b>CHIMPANION.</b>
         <div>
-          <div className="ptitle-print">Project estimate{client.company ? ` — ${client.company}` : ""}</div>
-          <div className="plain">
-            {client.name && <>Prepared for {client.name} · </>}
-            {est.ref}
-            {today && <> · {fmtDate(today, scope.market)}</>}
-            {validUntil && <> · valid until {fmtDate(validUntil, scope.market)}</>}
+          <div className="printbrand">
+            CHIMPANION<span>.</span>
           </div>
+          <div className="ptitle-print">
+            {client.company ? `Project estimate for ${client.company}` : "Project estimate"}
+          </div>
+          {client.name && <div className="printfor">Prepared for {client.name}</div>}
+        </div>
+        <div className="printmeta">
+          <div>
+            <span>Reference</span>
+            <b className="mono">{est.ref}</b>
+          </div>
+          {today && (
+            <div>
+              <span>Date</span>
+              <b>{fmtDate(today, scope.market)}</b>
+            </div>
+          )}
+          {validUntil && (
+            <div>
+              <span>Valid until</span>
+              <b>{fmtDate(validUntil, scope.market)}</b>
+            </div>
+          )}
         </div>
       </div>
 

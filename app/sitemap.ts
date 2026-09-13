@@ -7,6 +7,7 @@ import { site } from "@/lib/site";
  */
 const PAGES: { path: string; updated: string; priority: number }[] = [
   { path: "", updated: "2026-09-11", priority: 1 },
+  { path: "/media-plan", updated: "2026-09-13", priority: 0.8 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

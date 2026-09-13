@@ -1,4 +1,5 @@
 import { formatter, type Money } from "@/lib/pricing/format";
+import { MARKETS } from "@/lib/pricing/markets";
 import { RISK, TIMELINE_LABEL } from "@/lib/pricing/ratecard";
 import type { CostedPackage, Estimate, RunItem, Source, TimelinePlan } from "@/lib/pricing/types";
 
@@ -89,11 +90,11 @@ function PackageRows({
           <td>
             <b className="pk-name">{p.label}</b>
             <span className="pk-detail">{p.detail}</span>
-            {p.risk !== "known" && <span className="pk-risk">{RISK[p.risk].label}</span>}
+            {p.risk !== "known" && <span className="pk-risk noprint">{RISK[p.risk].label}</span>}
           </td>
           <td className="num">{hrs(p.totalHours)}</td>
           <td className="num">{fmt.money(p.cost)}</td>
-          <td className="sharecell" aria-label={`${Math.round((p.cost / total) * 100)}% of the work`}>
+          <td className="sharecell noprint" aria-label={`${Math.round((p.cost / total) * 100)}% of the work`}>
             <span className="meter">
               <span style={{ width: `${Math.max(2, (p.cost / total) * 100)}%` }} />
             </span>
@@ -141,7 +142,7 @@ export default function EstimateDetail({ est, onRemove }: { est: Estimate; onRem
                 <th>Package</th>
                 <th className="num">Hours</th>
                 <th className="num">Cost</th>
-                <th className="sharecell">Share</th>
+                <th className="sharecell noprint">Share</th>
                 <th className="rm noprint" />
               </tr>
             </thead>
@@ -214,7 +215,7 @@ export default function EstimateDetail({ est, onRemove }: { est: Estimate; onRem
               </tr>
               {rounding !== 0 && (
                 <tr className="adjust">
-                  <td colSpan={3}>Rounded to the nearest ₹1,000</td>
+                  <td colSpan={3}>Rounded to the nearest {fmt.money(MARKETS[est.market].round)}</td>
                   <td className="num">
                     {rounding > 0 ? "+" : ""}
                     {inr(rounding)}

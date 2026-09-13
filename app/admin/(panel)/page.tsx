@@ -2,6 +2,9 @@ import { BENCHMARKS } from "@/lib/pricing/benchmarks";
 import { estimate } from "@/lib/pricing/estimate";
 import { formatter } from "@/lib/pricing/format";
 import { MARKETS, MARKET_LIST } from "@/lib/pricing/markets";
+import type { Market } from "@/lib/pricing/types";
+
+const SHORT: Record<Market, string> = { IN: "India", US: "US", UK: "UK", AE: "UAE" };
 
 const REFERENCE: [keyof typeof BENCHMARKS, string][] = [
   ["landingPage", "Landing page"],
@@ -45,13 +48,13 @@ export default function AdminHome() {
           every real estimate should come from the planner.
         </p>
         <div className="tablewrap">
-          <table className="ledger">
+          <table className="ledger reftable">
             <thead>
               <tr>
                 <th>Project</th>
                 {MARKET_LIST.map((m) => (
-                  <th className="num" key={m}>
-                    {MARKETS[m].name}
+                  <th className="num" key={m} title={MARKETS[m].name}>
+                    {SHORT[m]}
                   </th>
                 ))}
                 <th className="num">Weeks</th>

@@ -110,9 +110,19 @@ sensible defaults — it's lead capture, and it stays on the landing page. `/adm
 every cost driver for a meeting and is internal.
 
 In a meeting: start from the closest preset, adjust as the client talks, apply or dismiss the
-"Worth raising" checks, then **Print / save PDF** for a proposal handout (name, reference, date and
-30-day validity in the header) or **Copy link** to send the exact estimate. Share links encode the
-scope in the URL hash; client name and business are never put in the link.
+"Worth raising" checks, then **Print / save PDF** or **Copy link** to send the exact estimate. Share
+links encode the scope in the URL hash; client name and business are never put in the link.
+
+**The printed estimate is client-ready.** Fill in "Who this estimate is for" at the top — both
+fields appear in the PDF header alongside the reference, date and 30-day validity. Printing drops
+everything internal: the scope form, presets, market switcher, the "Worth raising" notes, budget-fit
+and platform advice, confidence rating, risk labels and cost-share bars. What remains is the price,
+what's included, the timeline, how the price is built, payment milestones, running costs, and the
+assumptions and exclusions.
+
+Outside India, nothing India-specific appears: no GST line, no rupee figures, and the tax note
+states the client's own position (US: no tax added; UK/UAE: VAT reverse charge). A test asserts
+this across every non-India market.
 
 ### How a number is built
 

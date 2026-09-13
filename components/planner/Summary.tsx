@@ -40,15 +40,11 @@ export function Headline({ est }: { est: Estimate }) {
     <>
       <div className="small">Fixed price</div>
       <div className="phero">{money(est.fixedPrice)}</div>
-      <div className="plain">
-        {est.taxRate > 0 ? (
-          <>
-            + {money(est.tax)} {est.taxLabel} = <b>{money(est.total)}</b>
-          </>
-        ) : (
-          <>No Indian GST — exported service</>
-        )}
-      </div>
+      {est.taxRate > 0 && (
+        <div className="plain">
+          + {money(est.tax)} {est.taxLabel} = <b>{money(est.total)}</b>
+        </div>
+      )}
       <dl className="psum-rows">
         <div>
           <dt>Planning range</dt>
@@ -56,7 +52,7 @@ export function Headline({ est }: { est: Estimate }) {
             {short(est.low)}–{short(est.high)}
           </dd>
         </div>
-        <div>
+        <div className="noprint">
           <dt>Confidence</dt>
           <dd>
             <span className={`tag ${conf.cls}`}>{conf.text}</span>
@@ -75,9 +71,12 @@ export function Headline({ est }: { est: Estimate }) {
       </dl>
       <div className="pstatus">
         <span className={`chip ${tl.cls}`}>{tl.text}</span>
-        <span className={`chip ${est.budget.status === "under" ? "good" : est.budget.status}`}>{est.budget.message}</span>
+        {/* Budget fit and the platform call are notes to us, not to the client. */}
+        <span className={`noprint chip ${est.budget.status === "under" ? "good" : est.budget.status}`}>
+          {est.budget.message}
+        </span>
         {est.store && (
-          <span className="chip info">
+          <span className="noprint chip info">
             {est.store.reason} {est.store.altDelta > 0 ? `A custom store would add ${short(est.store.altDelta)}.` : `Shopify would save ${short(-est.store.altDelta)}.`}
           </span>
         )}

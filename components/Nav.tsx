@@ -9,6 +9,7 @@ export default function Nav() {
         </a>
         <div className="navlinks">
           <a href="/#services">Services</a>
+          <a href="/media-plan">Canopy</a>
           <a href="/#team">Team</a>
           <a href="/#faq">FAQ</a>
           <a href="/#contact">Contact</a>
